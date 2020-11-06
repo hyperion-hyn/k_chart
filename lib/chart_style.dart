@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart' show Color;
+import 'package:flutter/material.dart' show Color, Colors;
 
 class ChartColors {
   ChartColors._();
@@ -11,6 +11,9 @@ class ChartColors {
   static const Color upColor = Color(0xff4DAA90);
   static const Color dnColor = Color(0xffC15466);
   static const Color volColor = Color(0xff4729AE);
+  static const Color gridColor = Color(0xffEEF0F3);
+  static const Color candleGreenColor = Color(0xff53AE86);
+  static const Color candleRedColor = Color(0xffCC5858);
 
   static const Color macdColor = Color(0xff4729AE);
   static const Color difColor = Color(0xffC9B885);
@@ -30,7 +33,7 @@ class ChartColors {
   static const Color selectBorderColor = Color(0xff6C7A86);
 
   //选中后显示值背景的填充颜色
-  static const Color selectFillColor = Color(0xff0D1722);
+  static const Color selectFillColor = Colors.white;
 
   static Color getMAColor(int index) {
     Color maColor = ma5Color;
@@ -56,10 +59,10 @@ class ChartStyle {
   static const double pointWidth = 11.0;
 
   //蜡烛宽度
-  static const double candleWidth = 8.5;
+  static const double candleWidth = 6.5;
 
   //蜡烛中间线的宽度
-  static const double candleLineWidth = 1.5;
+  static const double candleLineWidth = 0.8;
 
   //vol柱子宽度
   static const double volWidth = 8.5;

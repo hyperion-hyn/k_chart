@@ -32,7 +32,7 @@ class KChartWidget extends StatefulWidget {
   final bool volHidden;
   final SecondaryState secondaryState;
   final bool isLine;
-  final bool isChinese;
+  final String locale;
   final List<String> timeFormat;
   //当屏幕滚动到尽头会调用，真为拉到屏幕右侧尽头，假为拉到屏幕左侧尽头
   final Function(bool) onLoadMore;
@@ -50,7 +50,7 @@ class KChartWidget extends StatefulWidget {
     this.secondaryState = SecondaryState.MACD,
     this.volHidden = false,
     this.isLine,
-    this.isChinese = true,
+    this.locale = "zh_CN",
     this.timeFormat = TimeFormat.YEAR_MONTH_DAY,
     this.onLoadMore,
     this.bgColor,
@@ -230,6 +230,21 @@ class _KChartWidgetState extends State<KChartWidget>
 
   void notifyChanged() => setState(() {});
 
+  List<String> getInfoNameList(String locale){
+    switch (locale) {
+      case "zh_CN":
+        return infoNamesCN;
+      case "zh_HK":
+        return infoNamesHK;
+      case "ko":
+        return infoNamesKO;
+      case "en":
+        return infoNamesEN;
+      default:
+        return infoNamesCN;
+    }
+  }
+
   final List<String> infoNamesCN = [
     "时间",
     "开",
@@ -238,7 +253,17 @@ class _KChartWidgetState extends State<KChartWidget>
     "收",
     "涨跌额",
     "涨跌幅",
-    "成交额"
+    "成交量"
+  ];
+  final List<String> infoNamesHK = [
+    "時間",
+    "開",
+    "高",
+    "低",
+    "收",
+    "漲跌額",
+    "漲幅",
+    "成交量"
   ];
   final List<String> infoNamesEN = [
     "Date",
@@ -249,6 +274,16 @@ class _KChartWidgetState extends State<KChartWidget>
     "Change",
     "Change%",
     "Amount"
+  ];
+  final List<String> infoNamesKO = [
+    "시간",
+    "열기",
+    "높음",
+    "낮음",
+    "닫기",
+    "변화량",
+    "증가",
+    "거래량"
   ];
   List<String> infos;
 
@@ -289,7 +324,7 @@ class _KChartWidgetState extends State<KChartWidget>
               shrinkWrap: true,
               itemBuilder: (context, index) {
                 return _buildItem(infos[index],
-                    widget.isChinese ? infoNamesCN[index] : infoNamesEN[index]);
+                    getInfoNameList(widget.locale)[index]);
               },
             ),
           );
@@ -299,18 +334,18 @@ class _KChartWidgetState extends State<KChartWidget>
   Widget _buildItem(String info, String infoName) {
     Color color = Colors.white;
     if (info.startsWith("+"))
-      color = Colors.green;
+      color = ChartColors.candleGreenColor;
     else if (info.startsWith("-"))
-      color = Colors.red;
+      color = ChartColors.candleRedColor;
     else
-      color = Colors.white;
+      color = Colors.black;
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
         Expanded(
             child: Text("$infoName",
-                style: const TextStyle(color: Colors.white, fontSize: 10.0))),
+                style: const TextStyle(color: Colors.black, fontSize: 10.0))),
         Text(info, style: TextStyle(color: color, fontSize: 10.0)),
       ],
     );
