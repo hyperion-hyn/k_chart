@@ -35,6 +35,16 @@ class ChartColors {
   //选中后显示值背景的填充颜色
   static const Color selectFillColor = Colors.white;
 
+  //实时价格线
+  static const Color rightRealTimeTextColor = Color(0xff0053EB);
+  static const Color selectedTextColor = Color(0xff000000);
+  static const Color realTimeBgColor = Color(0xffffffff);
+  static const Color realTimeLongLineColor = Color(0xffD8DEE1);
+  static const Color realTimeTextBorderColor = Color(0xFF8DA1AE);
+  static const Color realTimeTextColor = Color(0xFF869AAA);
+
+  static const Color remindTextColor = Color(0xFF000000);
+
   static Color getMAColor(int index) {
     Color maColor = ma5Color;
     switch (index % 3) {
@@ -75,4 +85,7 @@ class ChartStyle {
 
   //水平交叉线宽度
   static const double hCrossWidth = 0.5;
+
+  static const int gridRows = 3, gridColumns = 5;
+
 }

@@ -4,6 +4,7 @@ export 'package:flutter/material.dart'
 import 'package:flutter/material.dart'
     show Color, required, TextStyle, Rect, Canvas, Size, CustomPainter;
 import 'package:k_chart/utils/date_format_util.dart';
+import 'package:k_chart/utils/number_util.dart';
 import '../entity/k_line_entity.dart';
 import '../k_chart_widget.dart';
 import '../chart_style.dart' show ChartStyle;
@@ -36,6 +37,7 @@ abstract class BaseChartPainter extends CustomPainter {
   double mDataLen = 0.0; //数据占屏幕总长度
   double mPointWidth = ChartStyle.pointWidth;
   List<String> mFormats = [yyyy, '-', mm, '-', dd, ' ', HH, ':', nn]; //格式化时间
+  double mMarginRight = 0.0; //k线右边空出来的距离
 
   BaseChartPainter(
       {@required this.datas,
@@ -74,6 +76,7 @@ abstract class BaseChartPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     mDisplayHeight = size.height - mTopPadding - mBottomPadding;
     mWidth = size.width;
+    mMarginRight = (mWidth / ChartStyle.gridColumns - mPointWidth) / scaleX;
     initRect(size);
     calculateValue();
     initChartRenderer();
@@ -85,6 +88,7 @@ abstract class BaseChartPainter extends CustomPainter {
     if (datas != null && datas.isNotEmpty) {
       drawChart(canvas, size);
       drawRightText(canvas);
+      drawRealTimePrice(canvas, size);
       drawDate(canvas, size);
       if (isLongPress == true) drawCrossLineText(canvas, size);
       drawText(canvas, datas?.last, 5);
@@ -106,6 +110,9 @@ abstract class BaseChartPainter extends CustomPainter {
 
   //画右边值
   void drawRightText(canvas);
+
+  //画实时价格线
+  void drawRealTimePrice(Canvas canvas, Size size);
 
   //画时间
   void drawDate(Canvas canvas, Size size);
@@ -282,6 +289,20 @@ abstract class BaseChartPainter extends CustomPainter {
   ///获取平移的最小值
   double getMinTranslateX() {
     var x = -mDataLen + mWidth / scaleX - mPointWidth / 2;
+    x = x >= 0 ? 0.0 : x;
+    //数据不足一屏
+    if (x >= 0) {
+      if (mWidth/scaleX - getX(datas.length) < mMarginRight) {
+        //数据填充后剩余空间比mMarginRight小，求出差。x-=差
+        x -= mMarginRight - mWidth/scaleX + getX(datas.length);
+      } else {
+        //数据填充后剩余空间比Right大
+        mMarginRight = mWidth/scaleX - getX(datas.length);
+      }
+    } else if (x < 0) {
+      //数据超过一屏
+      x -= mMarginRight;
+    }
     return x >= 0 ? 0.0 : x;
   }
 
@@ -317,5 +338,9 @@ abstract class BaseChartPainter extends CustomPainter {
 //        oldDelegate.isLine != isLine ||
 //        oldDelegate.mainState != mainState ||
 //        oldDelegate.secondaryState != secondaryState;
+  }
+
+  String format(double n) {
+    return NumberUtil.format(n);
   }
 }

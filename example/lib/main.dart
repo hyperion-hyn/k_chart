@@ -102,7 +102,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 secondaryState: _secondaryState,
                 fixedLength: 2,
                 timeFormat: TimeFormat.YEAR_MONTH_DAY,
-                isChinese: isChinese,
+                locale: 'zh_CN',
               ),
             ),
             if (showLoading)

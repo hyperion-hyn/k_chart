@@ -23,6 +23,8 @@ class ChartPainter extends BaseChartPainter {
   List<Color> bgColor;
   int fixedLength;
   List<int> maDayList;
+  AnimationController controller;
+  double opacity;
 
   ChartPainter(
       {@required datas,
@@ -131,6 +133,106 @@ class ChartPainter extends BaseChartPainter {
     mMainRenderer?.drawRightText(canvas, textStyle, mGridRows);
     mVolRenderer?.drawRightText(canvas, textStyle, mGridRows);
     mSecondaryRenderer?.drawRightText(canvas, textStyle, mGridRows);
+  }
+
+  final Paint realTimePaint = Paint()
+    ..strokeWidth = 1.0
+    ..isAntiAlias = true,
+      pointPaint = Paint();
+
+  startAnimation() {
+    if (controller?.isAnimating != true) controller?.repeat(reverse: true);
+  }
+
+  stopAnimation() {
+    if (controller?.isAnimating == true) controller?.stop();
+  }
+
+  @override
+  void drawRealTimePrice(Canvas canvas, Size size) {
+    if (mMarginRight == 0 || datas?.isEmpty == true) return;
+    KLineEntity point = datas.last;
+    TextPainter tp = getTextPainter(format(point.close), ChartColors.rightRealTimeTextColor);
+    double y = getMainY(point.close);
+    //max越往右边滑值越小
+    var max = (mTranslateX.abs() + mMarginRight - getMinTranslateX().abs() + mPointWidth) * scaleX;
+    double x = mWidth - max;
+    if (!isLine) x += mPointWidth / 2;
+    //var dashWidth = 10;
+    var dashWidth = 5;
+    var dashSpace = 5;
+    double startX = 0;
+    final space = (dashSpace + dashWidth);
+    if (tp.width < max) {
+      while (startX < max) {
+        canvas.drawLine(Offset(x + startX, y), Offset(x + startX + dashWidth, y),
+            realTimePaint..color = ChartColors.rightRealTimeTextColor);
+        startX += space;
+      }
+      //画一闪一闪
+      if (isLine) {
+        startAnimation();
+        Gradient pointGradient =
+        RadialGradient(colors: [ChartColors.selectedTextColor.withOpacity(opacity ?? 0.0), Colors.transparent]);
+        pointPaint.shader = pointGradient.createShader(Rect.fromCircle(center: Offset(x, y), radius: 14.0));
+        canvas.drawCircle(Offset(x, y), 14.0, pointPaint);
+        canvas.drawCircle(Offset(x, y), 2.0, realTimePaint..color = ChartColors.selectedTextColor);
+      } else {
+        stopAnimation(); //停止一闪闪
+      }
+      double left = mWidth - tp.width;
+      double top = y - tp.height / 2;
+
+      canvas.drawRect(Rect.fromLTRB(left, top, left + tp.width, top + tp.height),
+          realTimePaint..color = ChartColors.realTimeBgColor);
+      tp.paint(canvas, Offset(left, top));
+    } else {
+      stopAnimation(); //停止一闪闪
+      startX = 0;
+      if (point.close > mMainMaxValue) {
+        y = getMainY(mMainMaxValue);
+      } else if (point.close < mMainMinValue) {
+        y = getMainY(mMainMinValue);
+      }
+      while (startX < mWidth) {
+        canvas.drawLine(Offset(startX, y), Offset(startX + dashWidth, y),
+            realTimePaint..color = ChartColors.realTimeLongLineColor);
+        startX += space;
+      }
+
+      const padding = 6.0;
+      const triangleHeight = 8.0; //三角高度
+      const triangleWidth = 5.0; //三角宽度
+
+      double left = mWidth - mWidth / ChartStyle.gridColumns - tp.width / 2 - padding * 2;
+      double top = y - tp.height / 2 - padding;
+      //加上三角形的宽以及padding
+      double right = left + tp.width + padding * 2 + triangleWidth + padding;
+      double bottom = top + tp.height + padding * 2;
+      double radius = (bottom - top) / 2;
+      //画椭圆背景
+      double borderWidth = 0.5;
+      RRect rectBg1 = RRect.fromLTRBR(left, top, right, bottom, Radius.circular(radius));
+      RRect rectBg2 = RRect.fromLTRBR(left - borderWidth, top - borderWidth, right + borderWidth, bottom + borderWidth, Radius.circular(radius + 2));
+      canvas.drawRRect(rectBg2, realTimePaint..color = ChartColors.realTimeTextBorderColor);
+      canvas.drawRRect(rectBg1, realTimePaint..color = ChartColors.realTimeBgColor);
+      tp = getTextPainter(format(point.close), ChartColors.realTimeTextColor);
+      Offset textOffset = Offset(left + padding, y - tp.height / 2);
+      tp.paint(canvas, textOffset);
+      //画三角
+      Path path = Path();
+      double dx = tp.width + textOffset.dx + padding;
+      double dy = top + (bottom - top - triangleHeight) / 2;
+      path.moveTo(dx, dy);
+      path.lineTo(dx + triangleWidth, dy + triangleHeight / 2);
+      path.lineTo(dx, dy + triangleHeight);
+      path.close();
+      canvas.drawPath(
+          path,
+          realTimePaint
+            ..color = ChartColors.realTimeTextColor
+            ..shader = null);
+    }
   }
 
   @override
@@ -258,20 +360,20 @@ class ChartPainter extends BaseChartPainter {
     double y = getMainY(mMainLowMinValue);
     if (x < mWidth / 2) {
       //画右边
-      TextPainter tp = getTextPainter("── " + mMainLowMinValue.toStringAsFixed(fixedLength), Colors.white);
+      TextPainter tp = getTextPainter("── " + mMainLowMinValue.toStringAsFixed(fixedLength), ChartColors.remindTextColor);
       tp.paint(canvas, Offset(x, y - tp.height / 2));
     } else {
-      TextPainter tp = getTextPainter(mMainLowMinValue.toStringAsFixed(fixedLength) + " ──", Colors.white);
+      TextPainter tp = getTextPainter(mMainLowMinValue.toStringAsFixed(fixedLength) + " ──", ChartColors.remindTextColor);
       tp.paint(canvas, Offset(x - tp.width, y - tp.height / 2));
     }
     x = translateXtoX(getX(mMainMaxIndex));
     y = getMainY(mMainHighMaxValue);
     if (x < mWidth / 2) {
       //画右边
-      TextPainter tp = getTextPainter("── " + mMainHighMaxValue.toStringAsFixed(fixedLength), Colors.white);
+      TextPainter tp = getTextPainter("── " + mMainHighMaxValue.toStringAsFixed(fixedLength), ChartColors.remindTextColor);
       tp.paint(canvas, Offset(x, y - tp.height / 2));
     } else {
-      TextPainter tp = getTextPainter(mMainHighMaxValue.toStringAsFixed(fixedLength) + " ──", Colors.white);
+      TextPainter tp = getTextPainter(mMainHighMaxValue.toStringAsFixed(fixedLength) + " ──", ChartColors.remindTextColor);
       tp.paint(canvas, Offset(x - tp.width, y - tp.height / 2));
     }
   }
