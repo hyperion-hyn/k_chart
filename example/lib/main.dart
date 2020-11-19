@@ -114,6 +114,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ]),
           buildButtons(),
           Container(
+            color: Colors.white,
             height: 230,
             width: double.infinity,
             child: DepthChart(_bids, _asks),

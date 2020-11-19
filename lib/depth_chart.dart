@@ -320,7 +320,7 @@ class DepthChartPainter extends CustomPainter {
 
     //画底部
     TextPainter priceTP =
-        getTextPainter(entity.price.toStringAsFixed(fixedLength));
+        getTextPainter(entity.price.toStringAsFixed(fixedLength), ChartColors.selectedTextColor);
     priceTP.layout();
     double left;
     if (dx <= priceTP.width / 2) {
@@ -340,7 +340,7 @@ class DepthChartPainter extends CustomPainter {
             bottomRect.top + (bottomRect.height - priceTP.height) / 2));
     //画左边
     TextPainter amountTP =
-        getTextPainter(entity.vol.toStringAsFixed(fixedLength));
+        getTextPainter(entity.vol.toStringAsFixed(fixedLength), ChartColors.selectedTextColor);
     amountTP.layout();
     double y = getY(entity.vol);
     double rightRectTop;
@@ -388,7 +388,7 @@ class DepthChartPainter extends CustomPainter {
 
   double getSellX(int position) => position * mSellPointWidth + mDrawWidth;
 
-  getTextPainter(String text, [Color color = Colors.white]) => TextPainter(
+  getTextPainter(String text, [Color color = Colors.black38]) => TextPainter(
       text:
           TextSpan(text: "$text", style: TextStyle(color: color, fontSize: 10)),
       textDirection: TextDirection.ltr);
